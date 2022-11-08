@@ -43,9 +43,20 @@ else:
 # Get orginization id
 request = "https://api.ic.peplink.com/rest/o?access_token=" + tokens['access_token']
 org_id_response = (requests.get(request)).json()
-org_id = org_id_response["data"][0]["id"]
-print("Currently selected \"{}\" with org_id code \"{}\"".format(org_id_response["data"][0]["name"], org_id))
 
+# Loop through all orginizations available
+counter = 0
+for org in org_id_response["data"]:
+    print("[{}]: {} with Orginization ID \"{}\"".format(counter, org["name"], org["id"]))
+
+# Allow user to select and validate user input
+try: 
+    user_org_select = int(input("Select or via number in brackets (EX: [1] = 1): "))
+    print("Currently selected \"{}\" with org_id code \"{}\"".format(org_id_response["data"][user_org_select]["name"], org_id_response["data"][user_org_select]["id"]))
+    org_id = org_id_response["data"][user_org_select]["id"]
+except: 
+    print("Invalid Orginization ID!")
+    exit()
 
 # Get groups
 request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g" + "?access_token=" + tokens['access_token']
