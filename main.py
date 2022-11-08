@@ -3,7 +3,6 @@
 # Requests and parsing
 import requests
 import json
-import urllib.request
 
 # ENV Vars
 import os
@@ -81,7 +80,6 @@ for group in all_group_id:
     
     devices_list = []
     for response in devices_response["data"]:
-        #all_group_id.append(response["id"])
         devices_list.append(response["id"])
         #print("{} with devices {}".format(group, response["id"]))
 
