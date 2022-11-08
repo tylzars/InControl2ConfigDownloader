@@ -15,6 +15,9 @@ incontrol_client_secret = os.getenv('incontrol_client_secret')
 # Make tokens dict
 tokens = {}
 
+# Get filepath
+file_path = input("Enter the full (non-relative) filepath to the directory that files should be saved too (EX: /Users/tylerzars/Desktop/Ross/PyIncontrolConfig/Testing/): ")
+
 # Read in env vars
 if os.getenv('access_token') != None:
     tokens["access_token"] = os.getenv('access_token')
@@ -92,24 +95,22 @@ for group in all_group_id:
 
         # Filename for save config
         device_name_request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "?access_token=" + tokens['access_token']
-        file_name = (requests.get(device_name_request)).json()["data"]["name"] + "-"
+        device_name_response = (requests.get(device_name_request)).json()["data"]["name"]
+        file_name = device_name_response + "-"
         file_name += config_id_response["date"].strip("-") + "_"
         file_name += config_id_response["file_list"][-1]["time"].replace(":","_")
-
-
-        #print(file_name)
 
         # Save config
         request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "/config_backup/" + str(config_id) + "?access_token=" + tokens['access_token']
         config_download = (requests.get(request))
         #print(config_download.content) # See raw hex recieved
 
-        # TODO Get this path from the env file
-        file_path = "/Users/tylerzars/Desktop/Ross/PyIncontrolConfig/Testing/"
-        file_path += file_name + ".conf"
-        open(file_path, 'wb').write(config_download.content)
+        # Add file to filepath for saving
+        file_path_save = file_path + file_name + ".conf"
+        open(file_path_save, 'wb').write(config_download.content)
 
-        print("Saved config for {} as {}.conf".format(file_name.split("-")[0], file_name))
+        # Print overview of loop
+        print("Saved config for {} as {}.conf".format(device_name_response, file_name))
 
         
 
