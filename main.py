@@ -1,3 +1,5 @@
+# Written By Tyler Zars (11/8/22)
+
 # Requests and parsing
 import requests
 import json
