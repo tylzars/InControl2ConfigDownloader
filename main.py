@@ -18,12 +18,12 @@ tokens = {}
 # Get filepath
 file_path = input("Enter the full (non-relative) filepath to the directory that files should be saved too (EX: /Users/tylerzars/Desktop/Ross/PyIncontrolConfig/Testing/): ")
 
-# Read in env vars
+# Read in .env vars
 if os.getenv('access_token') != None:
     tokens["access_token"] = os.getenv('access_token')
     tokens["refresh_token"] = os.getenv('refresh_token')
 else:
-    # Get OAuth2 Token: https://docs.informatica.com/integration-cloud/cloud-api-manager/current-version/api-manager-guide/authentication-and-authorization/oauth-2-0-authentication-and-authorization/python-3-example--invoke-a-managed-api-with-oauth-2-0-authentica.html
+    # Get OAuth2 Token
     url = 'https://api.ic.peplink.com/api/oauth2/token'
     header = {'content-type': 'application/x-www-form-urlencoded'}
     token_req_payload = {'grant_type': 'client_credentials'}
@@ -32,7 +32,7 @@ else:
     token_response = requests.post(url, data=token_req_payload, verify=True, allow_redirects=False, auth=(incontrol_client_id, incontrol_client_secret))
     tokens = json.loads(token_response.text)
 
-    # Set ENV
+    # Set .env
     set_key("access_token", tokens["access_token"])
     set_key("refresh_token", tokens["refresh_token"])
 
@@ -41,13 +41,14 @@ else:
 
 
 # Get orginization id
-request = "https://api.ic.peplink.com/rest/o?access_token=" + tokens['access_token']
-org_id_response = (requests.get(request)).json()
+org_id_request = "https://api.ic.peplink.com/rest/o?access_token=" + tokens['access_token']
+org_id_response = (requests.get(org_id_request)).json()
 
 # Loop through all orginizations available
 counter = 0
 for org in org_id_response["data"]:
     print("[{}]: {} with Orginization ID \"{}\"".format(counter, org["name"], org["id"]))
+    counter += 1
 
 # Allow user to select and validate user input
 try: 
@@ -58,22 +59,22 @@ except:
     print("Invalid Orginization ID!")
     exit()
 
-# Get groups
-request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g" + "?access_token=" + tokens['access_token']
-group_response = (requests.get(request)).json()
+# Get Groups
+groups_request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g" + "?access_token=" + tokens['access_token']
+groups_response = (requests.get(groups_request)).json()
 
 all_group_id = []
-for response in group_response["data"]:
+for response in groups_response["data"]:
     all_group_id.append(response["id"])
     #print(response["id"])
 
-print(all_group_id)
+print(f"All groups: {all_group_id}")
 
 # Get devices & build dict of them
 groups_and_devices_dict = {}
 for group in all_group_id: 
-    request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d" + "?access_token=" + tokens['access_token']
-    devices_response = (requests.get(request)).json()
+    devices_request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d" + "?access_token=" + tokens['access_token']
+    devices_response = (requests.get(devices_request)).json()
     #print(devices_response)
     
     devices_list = []
@@ -92,13 +93,13 @@ for group in all_group_id:
 
     for device in groups_and_devices_dict[group]:
         #print(device)
-        request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "/config_backup" +"?access_token=" + tokens['access_token']
+        configs_request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "/config_backup" +"?access_token=" + tokens['access_token']
         
-        devices_response = (requests.get(request)).json()
+        device_configs_response = (requests.get(configs_request)).json()
         #print(devices_response)
 
         # Grab most recent config date
-        config_id_response = devices_response["data"][-1]
+        config_id_response = device_configs_response["data"][-1]
         # Grab most recent config time
         #print(config_id_response["file_list"][-1])
 
@@ -112,8 +113,8 @@ for group in all_group_id:
         file_name += config_id_response["file_list"][-1]["time"].replace(":","_")
 
         # Save config
-        request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "/config_backup/" + str(config_id) + "?access_token=" + tokens['access_token']
-        config_download = (requests.get(request))
+        save_config_request = "https://api.ic.peplink.com/rest/o/" + org_id + "/g/" + str(group) + "/d/" + str(device) + "/config_backup/" + str(config_id) + "?access_token=" + tokens['access_token']
+        config_download = (requests.get(save_config_request))
         #print(config_download.content) # See raw hex recieved
 
         # Add file to filepath for saving

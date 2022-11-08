@@ -4,6 +4,8 @@ This is a Python3 script that willd download the most recent configurations for 
 
 Using a .env file, please add `incontrol_client_id` and `incontrol_client_secret` from making a client at [https://incontrol2.peplink.com/r/user/edit](https://incontrol2.peplink.com/r/user).
 
+You will need to specify the directory to write the files into and the orginization you would like to save the configurations from upon running the program.
+
 TODO:
 
 - Add token refresh instead of just getting a new token
